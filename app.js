@@ -8,6 +8,8 @@ var mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
 
 var usersRouter = require('./routes/users');
+var postRouter = require('./routes/posts');
+var commentRouter = require('./routes/comment');
 
 var app = express();
 
@@ -22,17 +24,19 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload({
   useTempFiles: true
-}))
+}));
 
 app.use('/users', usersRouter);
+app.use('/posts', postRouter);
+app.use('/comments', commentRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -43,8 +47,8 @@ app.use(function(err, req, res, next) {
 });
 
 mongoose.connect(process.env.DB_URL)
-.then(() => console.log('MongoDB connection Successful!!'))
-.catch(e => console.log(e))
+  .then(() => console.log('MongoDB connection Successful!!'))
+  .catch(e => console.log(e))
 
 const port = 5000;
 
