@@ -166,7 +166,26 @@ router.post('/signup', (req, res) => {
 
 });
 
+router.put('/follow/:id', async (req, res) => {
+  if (req.body.userId !== req.params.id) {
+    try {
+      const user = await User.findById(req.params.id);
+      const currentUser = await User.findById(req.body.userId);
+      if (!user.followers.includes(req.body.userId)) {
+        await user.updateOne({ $push: { followers: req.body.userId } })
+        await currentUser.updateOne({ $push : { following: req.params.id}})
+        res.status(200).send('user has been followed!!')
+      } else {
+        return res.status(400).send('you already follow this user!!')
+      }
+    } catch (error) {
+      return res.status(500).send(error)
+    } else {
+      res.status(403).send('you can not follow youself')
+    }
+  }
+};
 
-module.exports = router;
+  module.exports = router;
 
 
