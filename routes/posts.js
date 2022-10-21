@@ -50,8 +50,9 @@ router.delete('/delete/:id', async (req, res) => {
         const deletePost = await Post.findByIdAndRemove(id);
         if (!deletePost) {
             return res.status(400).send('post is already deleted!!')
+        } else {
+            return res.status(200).send('successfully deleted post!!')
         }
-        return res.status(200).send('successfully deleted post!!')
     } catch (error) {
         return res.status(500).send(error)
     }

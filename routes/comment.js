@@ -2,51 +2,64 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const router = require('express').Router();
 
-router.post('/create/:id', async (req, res) => {
+router.post('/create', async (req, res) => {
     try {
         const data = req.body;
-        const id = req.params.id;
-        data.id = id;
+        const postId = req.body.postId;
+        const commenterId = req.body.commentId;
+        data.postId = postId;
         const comment = await Comment.create(data);
-        await Post.findByIdAndUpdate(id, { $inc: { comments: 1 } });
+        await Post.findByIdAndUpdate(postId, { $inc: { comments: 1 } });
         return res.status(201).send(comment)
     } catch (error) {
-        return res.status(500).send(error)
+        return res.status(500).send(error);
     }
 });
 
-router.get('/get/:id', async (req, res) => {
+router.get('/get/:commentId', async (req, res) => {
     try {
-        const id = req.params.id;
-        const comment = await Comment.findById(id);
+        const commentId = req.params.commentId;
+        const comment = await Comment.findById(commentId);
         return res.status(200).send(comment);
     } catch (error) {
         return res.status(500).send(error)
     }
 });
 
-router.put('/update/:id', async (req, res) => {
+router.get('/getAllComments', async (req, res) => {
     try {
-        const data = req.body;
-        const id = req.params.id;
-        const comment = await Comment.findByIdAndUpdate(id, { $set: data }, { new: true });
-        return res.status(201).send({ message: 'successfully updated comment!!', data: comment });
+        const comment = await Comment.find().select('_id comment');
+        return res.status(200).send(comment);
     } catch (error) {
-        return res.status(500).send(error)
+        return res.status(500).send(error);
     }
 });
 
-router.delete('/delete/:id', async (req, res) => {
+router.put('/update/:commentId', async (req, res) => {
     try {
-        const id = req.params.id;
-        const comment = await Comment.findByIdAndRemove(id);
+        const data = req.body;
+        const commentId = req.params.commentId;
+        const comment = await Comment.findByIdAndUpdate(commentId, {  ...data }, { new: true });
+        console.log(data)
+        return res.status(201).send({ message: 'successfully updated comment!!', data: comment });
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+
+router.delete('/delete/:commentId/:postId', async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const { postId } = req.params;
+        const comment = await Comment.findByIdAndRemove(commentId);
+        await Post.findByIdAndUpdate(postId, { $inc: { comments: -1 } });
         if (!comment) {
             return res.status(400).send('comment is already deleted!!')
         } else {
             return res.status(200).send('successfully deleted comment!!')
         }
     } catch (error) {
-        return res.status(500).send(error)
+        return res.status(500).send(error);
     }
 });
 
