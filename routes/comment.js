@@ -1,9 +1,13 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const router = require('express').Router();
+const { ucomment } = require('../validation');
 
 router.post('/create', async (req, res) => {
     try {
+        const { error } = ucomment(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
+
         const data = req.body;
         const postId = req.body.postId;
         const commenterId = req.body.commentId;
@@ -39,7 +43,7 @@ router.put('/update/:commentId', async (req, res) => {
     try {
         const data = req.body;
         const commentId = req.params.commentId;
-        const comment = await Comment.findByIdAndUpdate(commentId, {  ...data }, { new: true });
+        const comment = await Comment.findByIdAndUpdate(commentId, { ...data }, { new: true });
         console.log(data)
         return res.status(201).send({ message: 'successfully updated comment!!', data: comment });
     } catch (error) {

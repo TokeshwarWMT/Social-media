@@ -1,11 +1,14 @@
 const Post = require('../models/post');
 const router = require('express').Router();
 const cloudinary = require('cloudinary').v2;
-
+const { upost } = require('../validation');
 
 router.post('/create', (req, res) => {
     try {
-        const file = req.files.photo;
+        const { error } = upost({ ...req.body, post: req.files ? req.files.post : '' });
+        if (error) return res.status(400).send(error.details[0].message);
+
+        const file = req.files.post;
         cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
             const data = req.body;
             const { userId, caption, likes, comments } = data;
@@ -22,7 +25,7 @@ router.post('/create', (req, res) => {
 router.get('/get/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const getPost = await Post.findById(id);
+        const getPost = await Post.findOne({ id, Profile: 'public' });
         return res.status(200).send(getPost);
     } catch (error) {
         return res.status(500).send(error);
@@ -31,7 +34,7 @@ router.get('/get/:id', async (req, res) => {
 
 router.put('/update/:id', async (req, res) => {
     try {
-        const file = req.files.photo;
+        const file = req.files.post;
         cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
             const data = req.body;
             const id = req.params.id;

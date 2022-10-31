@@ -3,6 +3,7 @@ const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const userAuth = require('../middleware/auth');
+const { usignup } = require('../validation');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -137,7 +138,11 @@ router.delete('/delete/:id', userAuth, async (req, res) => {
 });
 
 router.post('/signup', (req, res) => {
-  const file = req.files.photo;
+
+  const { error } = usignup({ ...req.body, profileImage: req.files ? req.files.profileImage : '' });
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const file = req.files.profileImage;
   cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
 
     const data = req.body;
