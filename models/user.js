@@ -13,8 +13,8 @@ const userSchema = new mongoose.Schema({
     Profile: { type: String, enum: ["private", "public"], default: "public" },
     encryptOTP: String,
     active: { type: Boolean, default: false },
-    followers: [{ type: ObjectId, ref: 'User', default: 0 }],
-    following: [{ type: ObjectId, ref: 'User', default: 0 }],
+    followers: { type: Array, default: [] },
+    following: { type: Array, default: [] },
 
 });
 
