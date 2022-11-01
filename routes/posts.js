@@ -2,6 +2,7 @@ const Post = require('../models/post');
 const router = require('express').Router();
 const cloudinary = require('cloudinary').v2;
 const { upost } = require('../validation');
+const User = require('../models/user');
 
 router.post('/create', (req, res) => {
     try {
@@ -25,7 +26,7 @@ router.post('/create', (req, res) => {
 router.get('/get/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const getPost = await Post.findOne({ id, Profile: 'public' }).populate('userId');
+        const getPost = await Post.findOne({ id, Profile: 'public' });
         return res.status(200).send(getPost);
     } catch (error) {
         return res.status(500).send(error);
@@ -56,6 +57,33 @@ router.delete('/delete/:id', async (req, res) => {
         } else {
             return res.status(200).send('successfully deleted post!!')
         }
+    } catch (error) {
+        return res.status(500).send(error)
+    }
+});
+
+// get post by blocked user
+router.get('/getByBlockedUser/:id', async (req, res) => {
+    if (req.body.userId !== req.params.id) {
+        try {
+            const blockeduser = await User.findById(req.params.id);
+            const currentUser = await User.findById(req.body.userId);
+            if (currentUser.blockedUser.includes(blockeduser.id)) {
+                return res.status(401).send('you have been blocked by user!!')
+            } else {
+                return res.status(200).send(currentUser);
+            }
+        } catch (error) {
+            return res.status(500).send(error)
+        }
+    }
+}
+);
+
+router.get('/getAllPost', async (req, res) => {
+    try {
+        const post = await Post.find();
+        return res.status(200).send(post)
     } catch (error) {
         return res.status(500).send(error)
     }
