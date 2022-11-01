@@ -13,33 +13,39 @@ cloudinary.config({
   secure: true
 });
 
-// router.post('/signup', async (req, res) => {
-//   try {
-//     const data = req.body;
-//     const { name, user_name, email, profileImage, gender, phone, password, confirm_password } = data;
-//     if (!name || !user_name || !email || !profileImage || !gender || !phone || !password || !confirm_password) {
-//       return res.status(400).send('Please input all fiels!!')
-//     };
-//     if (password !== confirm_password) {
-//       return res.status(400).send('password and confirm password does not match!!')
-//     };
+router.post('/signup', (req, res) => {
 
-//     function generateOTP(max) {
-//       return Math.floor(Math.random() * max)
-//     };
+  const { error } = usignup({ ...req.body, profileImage: req.files ? req.files.profileImage : '' });
+  if (error) return res.status(400).send(error.details[0].message);
 
-//     const salt = await bcrypt.genSalt(10);
-//     var otp = generateOTP(999999);
-//     console.log(otp)
-//     const encryptOTP = await bcrypt.hash(otp.toString(), salt);
-//     console.log(generateOTP)
+  const file = req.files.profileImage;
+  cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
 
-//     const user = await User.create({ ...data, encryptOTP });
-//     return res.status(200).send(user)
-//   } catch (error) {
-//     console.log(error.message)
-//   }
-// });
+    const data = req.body;
+    const { name, user_name, email, gender, phone, password, confirm_password } = data;
+    if (!name || !user_name || !email || !gender || !phone || !password || !confirm_password) {
+      return res.status(400).send('Please input all fiels!!')
+    };
+    if (password !== confirm_password) {
+      return res.status(400).send('password and confirm password does not match!!')
+    };
+
+    function generateOTP(max) {
+      return Math.floor(Math.random() * max)
+    };
+
+    const salt = await bcrypt.genSalt(10);
+    var otp = generateOTP(999999);
+    console.log(otp)
+    const encryptOTP = await bcrypt.hash(otp.toString(), salt);
+    console.log(generateOTP)
+
+    const user = await User.create({ ...data, encryptOTP, profileImage: result.url });
+    return res.status(200).send(user)
+
+  })
+
+});
 
 router.get('/verifyOTP', async (req, res) => {
   try {
@@ -137,40 +143,6 @@ router.delete('/delete/:id', userAuth, async (req, res) => {
   }
 });
 
-router.post('/signup', (req, res) => {
-
-  const { error } = usignup({ ...req.body, profileImage: req.files ? req.files.profileImage : '' });
-  if (error) return res.status(400).send(error.details[0].message);
-
-  const file = req.files.profileImage;
-  cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
-
-    const data = req.body;
-    const { name, user_name, email, gender, phone, password, confirm_password } = data;
-    if (!name || !user_name || !email || !gender || !phone || !password || !confirm_password) {
-      return res.status(400).send('Please input all fiels!!')
-    };
-    if (password !== confirm_password) {
-      return res.status(400).send('password and confirm password does not match!!')
-    };
-
-    function generateOTP(max) {
-      return Math.floor(Math.random() * max)
-    };
-
-    const salt = await bcrypt.genSalt(10);
-    var otp = generateOTP(999999);
-    console.log(otp)
-    const encryptOTP = await bcrypt.hash(otp.toString(), salt);
-    console.log(generateOTP)
-
-    const user = await User.create({ ...data, encryptOTP, profileImage: result.url });
-    return res.status(200).send(user)
-
-  })
-
-});
-
 router.put('/follow/:id', async (req, res) => {
   if (req.body.userId !== req.params.id) {
     try {
@@ -214,5 +186,4 @@ router.put('/unfollow/:id', async (req, res) => {
 });
 
 module.exports = router;
-
 
