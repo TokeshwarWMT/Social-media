@@ -82,8 +82,12 @@ router.get('/getByBlockedUser/:id', async (req, res) => {
 
 router.get('/getAllPost', async (req, res) => {
     try {
-        const post = await Post.find();
-        return res.status(200).send(post)
+        let { page, limit } = req.query;
+        if (!page) page = 1;
+        if (!limit) limit = 10;
+        const skip = (page - 1) * 10;
+        const posts = await Post.find().skip(skip).limit(limit);
+        return res.send({ page: page, limit: limit, posts: posts })
     } catch (error) {
         return res.status(500).send(error)
     }
