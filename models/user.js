@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     active: { type: Boolean, default: false },
     followers: { type: Array, default: [] },
     following: { type: Array, default: [] },
-
+    blockedUser: { type: Array, default: [] }
 });
 
 userSchema.pre('save', async function (next) {

@@ -10,8 +10,12 @@ const useAuth = async (req, res, next) => {
         const verifyUser = jwt.verify(token, key);
         req.user = verifyUser;
         next()
-    } catch (error) {
-        console.log(error)
+    } catch (e) {
+        if (e.message === 'invalid token') {
+            return res.status(498).send('invalid token!!')
+        } else {
+            return res.status(500).send(e)
+        }
     }
 };
 
