@@ -80,6 +80,7 @@ router.get('/getByBlockedUser/:id', async (req, res) => {
 }
 );
 
+// pagination in get all posts
 router.get('/getAllPost', async (req, res) => {
     try {
         let { page, limit } = req.query;
