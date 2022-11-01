@@ -25,7 +25,7 @@ router.post('/create', (req, res) => {
 router.get('/get/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const getPost = await Post.findOne({ id, Profile: 'public' });
+        const getPost = await Post.findOne({ id, Profile: 'public' }).populate('userId');
         return res.status(200).send(getPost);
     } catch (error) {
         return res.status(500).send(error);

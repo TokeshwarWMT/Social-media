@@ -104,7 +104,7 @@ router.get('/get/:id', userAuth, async (req, res) => {
   try {
     let id = req.params.id;
     const user = await User.findById(id);
-    return res.status(200).send({ user, followersCount: user.followers.length, followingCount: user.following.length })
+    return res.status(200).send({ user, followersCount: user.followers.length, followingCount: user.following.length, blockedUserCount: user.blockedUser.length })
   } catch (error) {
     return res.status(500).send(error)
   }
@@ -182,6 +182,44 @@ router.put('/unfollow/:id', async (req, res) => {
 
   } else {
     res.status(403).send('you can not unfollow yourself!!')
+  }
+});
+
+router.put('/block/:id', async (req, res) => {
+  if (req.body.userId !== req.params.id) {
+    try {
+      const user = await User.findById(req.params.id);
+      const currentUser = await User.findById(req.body.userId);
+      if (!user.blockedUser.includes(req.body.userId)) {
+        await currentUser.updateOne({ $push: { blockedUser: req.params.id } });
+        return res.status(201).send('user has been blocked!!')
+      } else {
+        return res.status(403).send('you already blocked this user!!')
+      }
+    } catch (error) {
+      return res.status(500).send(error)
+    }
+  } else {
+    res.status(403).send('you can not block yourself!!')
+  }
+});
+
+router.put('/unblock/:id', async (req, res) => {
+  if (req.body.userId !== req.params.id) {
+    try {
+      const currentUser = await User.findById(req.body.userId);
+      console.log(currentUser.blockedUser)
+      if (currentUser.blockedUser.includes(req.params.id)) {
+        await currentUser.updateOne({ $pull: { blockedUser: req.params.id } });
+        return res.status(201).send('user has been unblocked!!')
+      } else {
+        return res.status(403).send('you dont block this user!!')
+      }
+    } catch (error) {
+      return res.status(500).send(error)
+    }
+  } else {
+    res.status(403).send('you can not unblocked yourself!!')
   }
 });
 
